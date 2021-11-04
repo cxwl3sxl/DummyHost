@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Description>用于拦截http请求，返回固定的内容</Description>
+    <Version>1.21.11.1</Version>
+    <ApplicationIcon>80169_lego_test_crash.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PinFun.Core" Version="2.21.11.1" />
+  </ItemGroup>
+
+</Project>
