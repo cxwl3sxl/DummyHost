@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DummyHost": {
+      "commandName": "Project",
+      "commandLineArgs": "--ssl-pwd 123456 --port 7081 --ssl-port 7073"
+    }
+  }
+}

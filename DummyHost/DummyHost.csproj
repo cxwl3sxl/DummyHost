@@ -9,7 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PinFun.Core" Version="2.21.11.1" />
+    <PackageReference Include="PinFun.Core" Version="2.22.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ssl.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

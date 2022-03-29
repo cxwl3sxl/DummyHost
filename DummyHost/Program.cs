@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using PinFun.Core.Net.Common;
 using PinFun.Core.Net.Http;
 
 namespace DummyHost
@@ -14,19 +15,72 @@ namespace DummyHost
                 Help();
                 var config = new Config();
                 config.IpAddress ??= IPAddress.Any;
-                var server =
-                    new HttpServer(config.Port, "业务模拟服务", false, 10240, 0, config.IpAddress);
-                server.ConfigServer(appBuilder => { appBuilder.Use<DummyResponseHandler>(); });
-                server.Start();
+                var httpServer = TryStartHttp(config);
+                var httpsServer = TryStartHttps(config);
+
                 Console.WriteLine("服务已经成功启动，任意键退出...");
-                Console.WriteLine($"http://{config.IpAddress}:{config.Port}");
+                if (httpServer != null)
+                {
+                    Console.WriteLine($"http://{config.IpAddress}:{config.Port}");
+                }
+
+                if (httpsServer != null)
+                {
+                    Console.WriteLine($"https://{config.IpAddress}:{config.SslPort}");
+                }
+
                 Console.WriteLine("--------------");
                 Console.ReadKey();
-                server.Stop();
+                httpServer?.Stop();
+                httpsServer?.Stop();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"启动失败:{Environment.NewLine}{ex}");
+            }
+        }
+
+        static HttpServer TryStartHttp(Config config)
+        {
+            try
+            {
+                var server =
+                    new HttpServer(config.Port, "业务模拟服务", false, 10240, 0, config.IpAddress);
+                server.ConfigServer(appBuilder => { appBuilder.Use<DummyResponseHandler>(); });
+                server.Start().Wait();
+                return server;
+            }
+            catch (Exception ex)
+            {
+                Console.Write($"HTTP服务启动失败：{ex.Message}");
+                return null;
+            }
+        }
+
+        static HttpServer TryStartHttps(Config config)
+        {
+            try
+            {
+                HttpServer sslServer = null;
+                if (File.Exists("ssl.pfx"))
+                {
+                    sslServer = new HttpServer(config.SslPort, "业务模拟服务SSL", false, 10240, 0, config.IpAddress);
+                    sslServer.ConfigServer(appBuilder => { appBuilder.Use<DummyResponseHandler>(); });
+                    sslServer.SetCertificateInfo(new TlsCertificateInfo()
+                    {
+                        CertificateFile = "ssl.pfx",
+                        IsPasswordEncrypted = false,
+                        Password = config.SslPassword
+                    });
+                    sslServer.Start().Wait();
+                }
+
+                return sslServer;
+            }
+            catch (Exception ex)
+            {
+                Console.Write($"HTTPS服务启动失败：{ex.Message}");
+                return null;
             }
         }
 
