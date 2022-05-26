@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using DotNetty.Codecs.Http;
 using PinFun.Core.Net.Http;
 using PinFun.Core.Utils.FileWatcher;
@@ -25,7 +24,7 @@ namespace DummyHost
 
         public override async Task Invoke(HttpContext context)
         {
-            var url = HttpUtility.UrlDecode(context.Request.Uri);
+            var url = context.Request.File;
             _rollConsole.WriteLine($"{context.Request.Method}: {url}");
             if (TryGetResponse(url.Replace("/", "~"), out var header, out var content))
             {
