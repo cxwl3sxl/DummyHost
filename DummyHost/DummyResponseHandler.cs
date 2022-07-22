@@ -24,7 +24,7 @@ namespace DummyHost
 
         public override async Task Invoke(HttpContext context)
         {
-            var url = context.Request.File;
+            var url = context.Request.File.Split('?')[0];
             _rollConsole.WriteLine($"{context.Request.Method}: {url}");
             if (TryGetResponse(url.Replace("/", "~"), out var header, out var content))
             {
