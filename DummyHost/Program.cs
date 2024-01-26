@@ -89,15 +89,20 @@ namespace DummyHost
         {
             var dir = Path.Combine(Directory.GetCurrentDirectory(), "Response");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            Console.WriteLine("在程序根目录下的Response目录中存放需要拦截的请求配置，不支持子目录");
+            Console.WriteLine("在程序根目录下的Response目录中存放需要拦截的请求配置，支持子目录");
             Console.WriteLine("该目录下的每个txt文件配置一个拦截请求");
             Console.WriteLine("txt文件第一行表示拦截地址，从/开始");
-            Console.WriteLine("txt文件第二行开始用于配置返回的头");
-            Console.WriteLine("返回头配置完成后空一行，后续内容表示具体的返回值");
+            Console.WriteLine("空行用于分割返回头");
+            Console.WriteLine("返回头内容，支持多行，一行一个，格式为 xxx:xxx");
+            Console.WriteLine("空行用于分割返回内容");
+            Console.WriteLine("后续内容全部为返回内容");
             Console.WriteLine("详细参考例子.txt");
             File.WriteAllText(Path.Combine(dir, "例子.txt"), @"/api/template
+#必须保留一个空行，该行虽然为注释，但不支持注释，注意：只能空一行
+
 content-type:text/html; charset=utf-8
 other-header: other-header-value
+#必须保留一个空行，该行虽然为注释，但不支持注释，注意：只能空一行
 
 这里是正文了，这里是正文了
 这里是正文了，这里是正文了");

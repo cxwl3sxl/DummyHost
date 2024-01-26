@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Codecs.Http;
 using PinFun.Core.Net.Http;
@@ -74,69 +74,77 @@ namespace DummyHost
 
         void ReloadMap(bool msg)
         {
-            var files = Directory.GetFiles(_responseDir, "*.txt", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(_responseDir, "*.txt", SearchOption.AllDirectories);
 
             _fileMap.Clear();
             if (msg) RollConsole.Instance.WriteLine("正在重新载入映射关系，请稍后...", ConsoleColor.DarkGreen);
             foreach (var file in files)
             {
-                ParseFile(file, msg);
+                ParseFile(file.Replace(_responseDir, ""), msg, File.ReadAllLines(file));
             }
 
             if (msg) RollConsole.Instance.WriteLine($"载入完成，共计{_fileMap.Count}个", ConsoleColor.DarkGreen);
         }
 
-        void ParseFile(string file, bool msg)
+        void ParseFile(string file, bool msg, string[] allSourceLines)
         {
-            var allLines = File.ReadAllLines(file);
-            string url = null;
-            var isHeader = true;
-            var header = new Dictionary<string, string>();
-            var body = new StringBuilder();
-            for (var i = 0; i < allLines.Length; i++)
+            var firstNotEmptyStringIndex = 0;
+            for (var i = 0; i < allSourceLines.Length; i++)
             {
-                var line = allLines[i].Trim();
-                if (i == 0)
-                {
-                    url = line.ToLower();
-                    continue;
-                }
+                if (string.IsNullOrWhiteSpace(allSourceLines[i])) continue;
+                firstNotEmptyStringIndex = i;
+                break;
+            }
 
+            var allLines = allSourceLines.Skip(firstNotEmptyStringIndex).ToArray();
+
+            var responseInfo = new[] { new List<string>(), new List<string>(), new List<string>() };
+            var currentIndex = 0;
+            foreach (var t in allLines)
+            {
+                var line = t.Trim();
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    isHeader = false;
+                    currentIndex++;
                     continue;
                 }
 
-                if (isHeader)
-                {
-                    var index = line.IndexOf(':');
-                    if (index <= 0) continue;
-                    header[line.Substring(0, index).Trim()] = line.Substring(index + 1).Trim();
-                }
-                else
-                {
-                    body.AppendLine(line);
-                }
+                responseInfo[currentIndex].Add(line);
             }
 
-            if (string.IsNullOrWhiteSpace(url))
+            ParseResponse(file, responseInfo[0], responseInfo[1], responseInfo[2], msg);
+        }
+
+        void ParseResponse(string file, List<string> urlBuilder, List<string> headerBuilder, List<string> bodyBuilder,
+            bool msg)
+        {
+            if (urlBuilder.Count == 0)
             {
-                if (msg) RollConsole.Instance.WriteLine($"{Path.GetFileName(file)}和无法读取拦截的请求地址！", ConsoleColor.DarkRed);
+                RollConsole.Instance.WriteLine($"文件{file}非法，无法读取请求地址");
                 return;
             }
+
+            var url = urlBuilder[0].ToLower();
 
             if (_fileMap.ContainsKey(url))
             {
                 if (msg)
-                    RollConsole.Instance.WriteLine($"{Path.GetFileName(file)}和{_fileMap[url].File}拦截地址相同，将被忽略！",
+                    RollConsole.Instance.WriteLine($"{file}和{_fileMap[url].File}拦截地址相同，将被忽略！",
                         ConsoleColor.DarkRed);
                 return;
             }
 
+            var header = new Dictionary<string, string>();
+            foreach (var headerItem in headerBuilder)
+            {
+                var index = headerItem.IndexOf(':');
+                if (index <= 0) continue;
+                header[headerItem.Substring(0, index).Trim()] = headerItem.Substring(index + 1).Trim();
+            }
+
             _fileMap[url] = new ResponseConfig()
             {
-                Content = body.ToString(),
+                Content = string.Join(Environment.NewLine, bodyBuilder),
                 File = Path.GetFileName(file),
                 Header = header
             };
