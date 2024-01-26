@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
     <Description>用于拦截http请求，返回固定的内容</Description>
     <Version>1.21.11.1</Version>
     <ApplicationIcon>80169_lego_test_crash.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PinFun.Core" Version="2.22.3.3" />
+    <PackageReference Include="PinFun.Core" Version="3.0.2401.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,6 +12,7 @@ namespace DummyHost
         {
             try
             {
+                Console.CursorVisible = false;
                 Help();
                 var config = new Config();
                 config.IpAddress ??= IPAddress.Any;
@@ -88,12 +89,14 @@ namespace DummyHost
         {
             var dir = Path.Combine(Directory.GetCurrentDirectory(), "Response");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            Console.WriteLine("在程序根目录下的Response目录中存放拦截请求后的返回值");
-            Console.WriteLine("1. 用~替换路径分隔符/，例如：请求a/b/c.txt 将映射到文件 a~b~c.txt 上");
-            Console.WriteLine("2. 同样支持文件夹模式，例如：请求a/b/c.txt 也可以映射到 a/b~c.txt 上");
-            Console.WriteLine("3. 反馈文件支持设置返回头，换行后为正文，参考 Response/例子.txt");
-            Console.WriteLine("4. 由于无后缀文件不会触发更新因此无后缀文件需要手动重启或者添加删除有后缀文件用以触发");
-            File.WriteAllText(Path.Combine(dir, "例子.txt"), @"content-type:text/html; charset=utf-8
+            Console.WriteLine("在程序根目录下的Response目录中存放需要拦截的请求配置，不支持子目录");
+            Console.WriteLine("该目录下的每个txt文件配置一个拦截请求");
+            Console.WriteLine("txt文件第一行表示拦截地址，从/开始");
+            Console.WriteLine("txt文件第二行开始用于配置返回的头");
+            Console.WriteLine("返回头配置完成后空一行，后续内容表示具体的返回值");
+            Console.WriteLine("详细参考例子.txt");
+            File.WriteAllText(Path.Combine(dir, "例子.txt"), @"/api/template
+content-type:text/html; charset=utf-8
 other-header: other-header-value
 
 这里是正文了，这里是正文了
