@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6</TargetFramework>
     <Description>用于拦截http请求，返回固定的内容</Description>
-    <Version>1.21.11.1</Version>
+    <Version>1.24.1.1</Version>
     <ApplicationIcon>80169_lego_test_crash.ico</ApplicationIcon>
   </PropertyGroup>
 
