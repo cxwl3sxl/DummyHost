@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using PinFun.Core.Net.Common;
 using PinFun.Core.Net.Http;
+using PinFun.Core.ServiceHost.WebHost.Middleware;
 
 namespace DummyHost
 {
@@ -43,11 +44,17 @@ namespace DummyHost
 
         static HttpServer TryStartHttp(Config config)
         {
+            if (!config.StartHttp) return null;
+
             try
             {
                 var server =
                     new HttpServer(config.Port, "业务模拟服务", false, 10240, 0, config.IpAddress);
-                server.ConfigServer(appBuilder => { appBuilder.Use<DummyResponseHandler>(); });
+                server.ConfigServer(appBuilder =>
+                {
+                    appBuilder.Use<CorsMiddleware>();
+                    appBuilder.Use<DummyResponseHandler>();
+                });
                 server.Start().Wait();
                 return server;
             }
@@ -60,13 +67,19 @@ namespace DummyHost
 
         static HttpServer TryStartHttps(Config config)
         {
+            if (!config.StartHttps) return null;
+
             try
             {
                 HttpServer sslServer = null;
                 if (File.Exists("ssl.pfx"))
                 {
                     sslServer = new HttpServer(config.SslPort, "业务模拟服务SSL", false, 10240, 0, config.IpAddress);
-                    sslServer.ConfigServer(appBuilder => { appBuilder.Use<DummyResponseHandler>(); });
+                    sslServer.ConfigServer(appBuilder =>
+                    {
+                        appBuilder.Use<CorsMiddleware>();
+                        appBuilder.Use<DummyResponseHandler>();
+                    });
                     sslServer.SetCertificateInfo(new TlsCertificateInfo()
                     {
                         CertificateFile = "ssl.pfx",
@@ -89,6 +102,7 @@ namespace DummyHost
         {
             var dir = Path.Combine(Directory.GetCurrentDirectory(), "Response");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            Console.WriteLine("启动参数请通过 --help 查看");
             Console.WriteLine("在程序根目录下的Response目录中存放需要拦截的请求配置，支持子目录");
             Console.WriteLine("该目录下的每个txt文件配置一个拦截请求");
             Console.WriteLine("txt文件第一行表示拦截地址，从/开始");

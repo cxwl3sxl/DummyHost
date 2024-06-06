@@ -5,6 +5,16 @@ namespace DummyHost
 {
     public class Config : CommandArgument
     {
+        [CommandArgumentElement("http", ArgumentParser = typeof(BoolParser), DefaultValue = true,
+            Help = "是否启动Http服务,y/n",
+            IsRequired = false)]
+        public bool StartHttp { get; set; }
+
+        [CommandArgumentElement("https", ArgumentParser = typeof(BoolParser), DefaultValue = true,
+            Help = "是否启动Https服务, 证书文件为 ssl.pfx ,y/n",
+            IsRequired = false)]
+        public bool StartHttps { get; set; }
+
         [CommandArgumentElement("port", ArgumentParser = typeof(PortParser), DefaultValue = 80, Help = "该服务的工作端口",
             IsRequired = false)]
         public int Port { get; set; }
